@@ -1,8 +1,8 @@
-package server;
+package server.processingstrategy;
 
 import java.util.Date;
 
-class TimestampProcessingStrategy implements IProcessingStrategy {
+public class TimestampProcessingStrategy implements ProcessingStrategy {
 
     @Override
     public String process(String request) {

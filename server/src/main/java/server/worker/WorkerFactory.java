@@ -1,4 +1,6 @@
-package server;
+package server.worker;
+
+import server.processingstrategy.ProcessingStrategy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,19 +8,19 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-class Worker implements IWorker {
+public class WorkerFactory implements IWorkerFactory {
 
-    final private IProcessingStrategy pongStrategy;
+    final private ProcessingStrategy pongStrategy;
 
-    Worker(IProcessingStrategy pongStrategy) {
+    WorkerFactory(ProcessingStrategy pongStrategy) {
         this.pongStrategy = pongStrategy;
     }
 
     @Override
-    public Runnable newInstance(Socket socket) {
+    public Runnable createWorker(Socket client) {
         return () -> {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                 PrintWriter out = new PrintWriter(client.getOutputStream(), true)) {
                 String input = in.readLine();
                 String output = pongStrategy.process(input);
                 out.println(output);

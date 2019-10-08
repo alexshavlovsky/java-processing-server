@@ -1,6 +1,6 @@
-package server;
+package server.processingstrategy;
 
-class MathSquareProcessingStrategy implements IProcessingStrategy {
+public class MathSquareProcessingStrategy implements ProcessingStrategy {
 
     @Override
     public String process(String request) {
