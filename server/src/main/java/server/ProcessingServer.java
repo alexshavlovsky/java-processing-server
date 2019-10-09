@@ -16,6 +16,8 @@ public class ProcessingServer extends Thread {
     private final int socketTimeout;
     private final int processingPoolSize;
     private final WorkerFactory workerFactory;
+    private int messagesAccepted = 0;
+    private int messagesProcessed = 0;
 
     public ProcessingServer(String serverThreadName, int port, int clientSocketTimeout, int processingPoolSize, WorkerFactory workerFactory) {
         this.logger = Logger.getLogger(ProcessingServer.class + ":" + serverThreadName);
@@ -41,6 +43,9 @@ public class ProcessingServer extends Thread {
 
                 serverSocket.setSoTimeout(500);
                 Socket client = serverSocket.accept();
+                if (messagesAccepted % 1000 == 0 && messagesAccepted > 0)
+                    logger.info("Messages accepted/processed: " + messagesAccepted + "/" + messagesProcessed);
+                messagesAccepted++;
                 if (logger.isDebugEnabled())
                     logger.debug("Accepted connection from " + client.getInetAddress().getHostAddress());
 
@@ -49,8 +54,9 @@ public class ProcessingServer extends Thread {
 
                 try {
                     Integer exitCode = future.get();
-                    if (!exitCode.equals(0))
-                        logger.error("Worker for " + client.getInetAddress().getHostAddress() + " finished with exit code " + exitCode);
+                    if (exitCode == 0) messagesProcessed++;
+                    else logger.error("Worker for " + client.getInetAddress().getHostAddress() +
+                            " finished with exit code " + exitCode);
                 } catch (CancellationException e) {
                     logger.error("Worker cancellation exception", e);
                 } catch (ExecutionException e) {
@@ -61,6 +67,7 @@ public class ProcessingServer extends Thread {
 
             } catch (SocketTimeoutException e) {
                 if (this.isInterrupted()) break;
+                logger.debug("Alive");
             } catch (IOException e) {
                 logger.error("Main loop exception", e);
                 break;
