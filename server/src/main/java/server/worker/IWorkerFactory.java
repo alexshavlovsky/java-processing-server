@@ -1,7 +1,8 @@
 package server.worker;
 
 import java.net.Socket;
+import java.util.concurrent.Callable;
 
 interface IWorkerFactory {
-    Runnable createWorker(Socket client);
+    Callable<Integer> createWorker(Socket client);
 }
