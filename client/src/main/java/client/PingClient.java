@@ -1,6 +1,8 @@
 package client;
 
 import org.apache.log4j.Logger;
+import server.ClientStatus;
+import server.processingstrategy.ProcessingException;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -9,8 +11,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import static server.encoder.StreamEncoder.readString;
-import static server.encoder.StreamEncoder.writeString;
+import static server.StreamEncoder.*;
 
 public class PingClient implements IPingClient {
 
@@ -19,6 +20,7 @@ public class PingClient implements IPingClient {
     final private InetAddress address;
     final private int port;
     final private int readTimeout;
+    private int retryConnectionCount = 0;
 
     public PingClient(String clientName, InetAddress address, int port, int readTimeout) {
         this.logger = Logger.getLogger(PingClient.class + ":" + clientName);
@@ -28,7 +30,7 @@ public class PingClient implements IPingClient {
     }
 
     @Override
-    public String sendPing(String msg) {
+    public String sendPing(String msg) throws IOException, ProcessingException {
         if (logger.isDebugEnabled()) logger.debug("Connecting to " + address.getHostAddress() + ":" + port);
         while (true)
             try (Socket socket = new Socket(address, port);
@@ -36,14 +38,21 @@ public class PingClient implements IPingClient {
                  DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                 if (logger.isDebugEnabled()) logger.debug("Writing to socket " + msg.length() + " bytes");
                 writeString(out, msg);
+                writeClientStatus(out, new ClientStatus(retryConnectionCount));
                 socket.setSoTimeout(readTimeout);
-                if (logger.isDebugEnabled()) logger.debug("Reading from socket");
+
+                logger.debug("Read processing status");
+                ProcessingException exception = readProcessingException(in);
+
+                if (exception != null) {
+                    logger.error("Processing error received");
+                    throw exception;
+                }
+
+                logger.debug("Read payload");
                 return readString(in);
             } catch (ConnectException e) {
-                // reconnect
-            } catch (IOException e) {
-                logger.error("Exception", e);
-                return null;
+                retryConnectionCount++;
             }
     }
 
