@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ProcessingServer extends Thread {
 
@@ -21,7 +24,7 @@ public class ProcessingServer extends Thread {
     private int messagesProcessed = 0;
     private int clientRetriesCount = 0;
 
-    public ProcessingServer(String serverThreadName, int port, int clientSocketTimeout, int processingPoolSize, int backlog, WorkerFactory workerFactory) {
+    public ProcessingServer(String serverThreadName, int port, WorkerFactory workerFactory, int clientSocketTimeout, int processingPoolSize, int backlog) {
         this.logger = Logger.getLogger(ProcessingServer.class + ":" + serverThreadName);
         this.setName(serverThreadName);
         this.port = port;
@@ -29,6 +32,10 @@ public class ProcessingServer extends Thread {
         this.backlog = backlog;
         this.processingPoolSize = processingPoolSize;
         this.workerFactory = workerFactory;
+    }
+
+    public ProcessingServer(String serverThreadName, int port, WorkerFactory workerFactory) {
+        this(serverThreadName, port, workerFactory, 1000, 10, 50);
     }
 
     public void run() {
@@ -44,11 +51,13 @@ public class ProcessingServer extends Thread {
 
             while (true) try {
 
-                serverSocket.setSoTimeout(1000);
-                Socket client = serverSocket.accept();
                 if (messagesAccepted % 1000 == 0 && messagesAccepted > 0)
                     logger.info("Clients accepted/processed/retries: " + messagesAccepted + "/" + messagesProcessed + "/" + clientRetriesCount);
+
+                serverSocket.setSoTimeout(1000);
+                Socket client = serverSocket.accept();
                 messagesAccepted++;
+
                 if (logger.isDebugEnabled())
                     logger.debug("Accepted connection from " + client.getInetAddress().getHostAddress());
 
@@ -67,7 +76,7 @@ public class ProcessingServer extends Thread {
 
             } catch (SocketTimeoutException e) {
                 if (this.isInterrupted()) break;
-                logger.debug("Alive");
+                logger.debug("Server is alive");
             } catch (IOException e) {
                 logger.error("Main loop exception", e);
                 break;
@@ -81,6 +90,18 @@ public class ProcessingServer extends Thread {
 
         logger.info("Terminated");
 
+    }
+
+    public int getMessagesAccepted() {
+        return messagesAccepted;
+    }
+
+    public int getMessagesProcessed() {
+        return messagesProcessed;
+    }
+
+    public int getClientRetriesCount() {
+        return clientRetriesCount;
     }
 
 }

@@ -20,6 +20,7 @@ public class PingClient implements IPingClient {
     final private InetAddress address;
     final private int port;
     final private int readTimeout;
+    final private int RECONNECT_RETRIES = 3;
     private int retryConnectionCount = 0;
 
     public PingClient(String clientName, InetAddress address, int port, int readTimeout) {
@@ -27,6 +28,10 @@ public class PingClient implements IPingClient {
         this.address = address;
         this.port = port;
         this.readTimeout = readTimeout;
+    }
+
+    public PingClient(String clientName, InetAddress address, int port) {
+        this(clientName, address, port, 5000);
     }
 
     @Override
@@ -53,6 +58,11 @@ public class PingClient implements IPingClient {
                 return readString(in);
             } catch (ConnectException e) {
                 retryConnectionCount++;
+                if (retryConnectionCount > RECONNECT_RETRIES) {
+                    logger.error("Connection refused");
+                    throw e;
+                }
+                if (logger.isDebugEnabled()) logger.debug("Connection retry " + retryConnectionCount);
             }
     }
 

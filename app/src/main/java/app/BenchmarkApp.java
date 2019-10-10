@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class App {
+public class BenchmarkApp {
 
     private static final Random RANDOM = new Random();
 
@@ -28,13 +28,13 @@ public class App {
 
     public static void main(String[] args) throws InterruptedException {
 
-        int MESSAGES_COUNT = 100000;
+        int MESSAGES_COUNT = 10000;
         int MESSAGE_LENGTH = 20;
         int PORT = 8080;
         int SERVER_THREADS = 10;
-        int CLIENT_THREADS = 50;
+        int CLIENT_THREADS = 100;
 
-        ProcessingServer server = new ProcessingServer("Echo Server", PORT, 1000, SERVER_THREADS, CLIENT_THREADS, WorkerFactories.echoWorkerFactory());
+        ProcessingServer server = new ProcessingServer("Echo Server", PORT, WorkerFactories.echoWorkerFactory(), 1000, SERVER_THREADS, CLIENT_THREADS);
 
         server.start();
 
