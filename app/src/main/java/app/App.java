@@ -29,12 +29,12 @@ public class App {
     public static void main(String[] args) throws InterruptedException {
 
         int MESSAGES_COUNT = 100000;
-        int MESSAGE_LENGTH = 10;
+        int MESSAGE_LENGTH = 20;
         int PORT = 8080;
-        int SERVER_THREADS = 20;
-        int CLIENT_THREADS = 200;
+        int SERVER_THREADS = 10;
+        int CLIENT_THREADS = 50;
 
-        ProcessingServer server = new ProcessingServer("Echo Server", PORT, 1000, SERVER_THREADS, WorkerFactories.echoWorkerFactory());
+        ProcessingServer server = new ProcessingServer("Echo Server", PORT, 1000, SERVER_THREADS, CLIENT_THREADS, WorkerFactories.echoWorkerFactory());
 
         server.start();
 
@@ -43,7 +43,12 @@ public class App {
             String clientName = "Client-" + (i + 1);
             String msg = getRandomString(MESSAGE_LENGTH);
             executor.submit(() -> {
-                String pong = new PingClient(clientName, InetAddress.getLoopbackAddress(), PORT, 5000).sendPing(msg);
+                String pong = null;
+                try {
+                    pong = new PingClient(clientName, InetAddress.getLoopbackAddress(), PORT, 5000).sendPing(msg);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 if (!msg.equals(pong)) System.out.println(clientName + " error");
             });
         }
