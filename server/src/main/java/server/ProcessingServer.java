@@ -14,16 +14,19 @@ public class ProcessingServer extends Thread {
     private final Logger logger;
     private final int port;
     private final int socketTimeout;
+    private final int backlog;
     private final int processingPoolSize;
     private final WorkerFactory workerFactory;
     private int messagesAccepted = 0;
     private int messagesProcessed = 0;
+    private int clientRetriesCount = 0;
 
-    public ProcessingServer(String serverThreadName, int port, int clientSocketTimeout, int processingPoolSize, WorkerFactory workerFactory) {
+    public ProcessingServer(String serverThreadName, int port, int clientSocketTimeout, int processingPoolSize, int backlog, WorkerFactory workerFactory) {
         this.logger = Logger.getLogger(ProcessingServer.class + ":" + serverThreadName);
         this.setName(serverThreadName);
         this.port = port;
         this.socketTimeout = clientSocketTimeout;
+        this.backlog = backlog;
         this.processingPoolSize = processingPoolSize;
         this.workerFactory = workerFactory;
     }
@@ -35,30 +38,27 @@ public class ProcessingServer extends Thread {
         ExecutorService processingPool = Executors.newFixedThreadPool(processingPoolSize);
 
         try (AutoCloseable close = processingPool::shutdown;
-             ServerSocket serverSocket = new ServerSocket(port)) {
+             ServerSocket serverSocket = new ServerSocket(port, backlog)) {
 
             logger.info("Listening on port " + serverSocket.getLocalPort());
 
             while (true) try {
 
-                serverSocket.setSoTimeout(500);
+                serverSocket.setSoTimeout(1000);
                 Socket client = serverSocket.accept();
                 if (messagesAccepted % 1000 == 0 && messagesAccepted > 0)
-                    logger.info("Messages accepted/processed: " + messagesAccepted + "/" + messagesProcessed);
+                    logger.info("Clients accepted/processed/retries: " + messagesAccepted + "/" + messagesProcessed + "/" + clientRetriesCount);
                 messagesAccepted++;
                 if (logger.isDebugEnabled())
                     logger.debug("Accepted connection from " + client.getInetAddress().getHostAddress());
 
                 client.setSoTimeout(socketTimeout);
-                Future<Integer> future = processingPool.submit(workerFactory.createWorker(client));
+                Future<ClientStatus> future = processingPool.submit(workerFactory.createWorker(client));
 
                 try {
-                    Integer exitCode = future.get();
-                    if (exitCode == 0) messagesProcessed++;
-                    else logger.error("Worker for " + client.getInetAddress().getHostAddress() +
-                            " finished with exit code " + exitCode);
-                } catch (CancellationException e) {
-                    logger.error("Worker cancellation exception", e);
+                    ClientStatus clientStatus = future.get();
+                    clientRetriesCount += clientStatus.getRetryConnectionCount();
+                    messagesProcessed++;
                 } catch (ExecutionException e) {
                     logger.error("Worker execution exception", e.getCause());
                 } catch (InterruptedException e) {
