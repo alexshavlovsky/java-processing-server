@@ -3,14 +3,13 @@ package server.processingstrategy;
 public class MathSquareProcessingStrategy implements ProcessingStrategy {
 
     @Override
-    public String process(String request) {
+    public String process(String request) throws ProcessingException {
         try {
             int i = Integer.parseInt(request);
             return String.valueOf(i * i);
         } catch (NumberFormatException e) {
-            return e.toString();
+            throw new ProcessingException(e, 1);
         }
-
     }
 
 }
