@@ -8,7 +8,7 @@ public class WorkerFactory implements IWorkerFactory {
 
     final private ProcessingStrategy pongStrategy;
 
-    WorkerFactory(ProcessingStrategy pongStrategy) {
+    public WorkerFactory(ProcessingStrategy pongStrategy) {
         this.pongStrategy = pongStrategy;
     }
 

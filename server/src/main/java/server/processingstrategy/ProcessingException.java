@@ -4,7 +4,7 @@ public class ProcessingException extends Exception {
 
     private final int exitCode;
 
-    ProcessingException(Exception e, int exitCode) {
+    public ProcessingException(Exception e, int exitCode) {
         super(e);
         this.exitCode = exitCode;
     }
@@ -16,6 +16,11 @@ public class ProcessingException extends Exception {
 
     public int getExitCode() {
         return exitCode;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + " (exit code " + exitCode + ")";
     }
 
 }

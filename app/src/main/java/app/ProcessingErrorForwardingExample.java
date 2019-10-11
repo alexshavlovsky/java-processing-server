@@ -7,17 +7,24 @@ import server.worker.WorkerFactories;
 import java.net.InetAddress;
 
 public class ProcessingErrorForwardingExample {
-    public static void main(String[] args) throws InterruptedException {
-        ProcessingServer server = new ProcessingServer("Math Server", 8080, WorkerFactories.mathSquareWorkerFactory());
+
+    public static void main(String[] args) {
+
+        int PORT = 8081;
+
+        ProcessingServer server = new ProcessingServer("Prime Decompose Server", PORT, WorkerFactories.primeDecomposeWorkerFactory());
         server.start();
 
-        PingClient client = new PingClient("Math Client", InetAddress.getLoopbackAddress(), 8080, 5000);
+        PingClient client = new PingClient("Prime decompose Client", InetAddress.getLoopbackAddress(), PORT);
+
         try {
-            System.out.println(client.sendPing("x"));
+            System.out.println(client.sendPing("3.141"));
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         server.interrupt();
-        server.join();
+
     }
+
 }
