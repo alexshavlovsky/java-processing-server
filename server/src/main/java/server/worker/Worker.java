@@ -1,15 +1,13 @@
 package server.worker;
 
 import core.ClientStatus;
+import core.ProcessingDataInputStream;
+import core.ProcessingDataOutputStream;
 import core.ProcessingException;
 import server.processingstrategy.ProcessingStrategy;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-
-import static core.StreamEncoder.*;
 
 class Worker implements IWorker {
 
@@ -23,18 +21,18 @@ class Worker implements IWorker {
 
     @Override
     public ClientStatus call() throws IOException {
-        try (DataInputStream in = new DataInputStream(client.getInputStream());
-             DataOutputStream out = new DataOutputStream(client.getOutputStream())) {
+        try (ProcessingDataInputStream in = new ProcessingDataInputStream(client.getInputStream());
+             ProcessingDataOutputStream out = new ProcessingDataOutputStream(client.getOutputStream())) {
 
-            String input = readString(in);
-            ClientStatus clientStatus = readClientStatus(in);
+            String input = in.readString();
+            ClientStatus clientStatus = in.readClientStatus();
 
             try {
                 String output = processingStrategy.process(input);
                 out.writeInt(0);
-                writeString(out, output);
+                out.writeString(output);
             } catch (ProcessingException e) {
-                writeProcessingException(out, e);
+                out.writeProcessingException(e);
             }
 
             return clientStatus;

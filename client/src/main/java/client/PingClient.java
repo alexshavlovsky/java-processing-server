@@ -1,17 +1,15 @@
 package client;
 
 import core.ClientStatus;
+import core.ProcessingDataInputStream;
+import core.ProcessingDataOutputStream;
 import core.ProcessingException;
 import org.apache.log4j.Logger;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-
-import static core.StreamEncoder.*;
 
 public class PingClient implements IPingClient {
 
@@ -39,15 +37,15 @@ public class PingClient implements IPingClient {
         if (logger.isDebugEnabled()) logger.debug("Connecting to " + address.getHostAddress() + ":" + port);
         while (true)
             try (Socket socket = new Socket(address, port);
-                 DataInputStream in = new DataInputStream(socket.getInputStream());
-                 DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
+                 ProcessingDataInputStream in = new ProcessingDataInputStream(socket.getInputStream());
+                 ProcessingDataOutputStream out = new ProcessingDataOutputStream(socket.getOutputStream())) {
                 if (logger.isDebugEnabled()) logger.debug("Writing to socket " + msg.length() + " bytes");
-                writeString(out, msg);
-                writeClientStatus(out, new ClientStatus(retryConnectionCount));
+                out.writeString(msg);
+                out.writeClientStatus(new ClientStatus(retryConnectionCount));
                 socket.setSoTimeout(readTimeout);
 
                 logger.debug("Read processing status");
-                ProcessingException exception = readProcessingException(in);
+                ProcessingException exception = in.readProcessingException();
 
                 if (exception != null) {
                     logger.error("Processing error received");
@@ -55,7 +53,7 @@ public class PingClient implements IPingClient {
                 }
 
                 logger.debug("Read payload");
-                return readString(in);
+                return in.readString();
             } catch (ConnectException e) {
                 retryConnectionCount++;
                 if (retryConnectionCount > RECONNECT_RETRIES) {
