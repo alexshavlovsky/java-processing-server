@@ -22,7 +22,7 @@
     <dependencies>
         <dependency>
             <groupId>com.ctzn</groupId>
-            <artifactId>server</artifactId>
+            <artifactId>core</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

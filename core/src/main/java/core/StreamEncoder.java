@@ -1,6 +1,4 @@
-package server;
-
-import server.processingstrategy.ProcessingException;
+package core;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,10 +11,6 @@ public class StreamEncoder {
         out.flush();
     }
 
-    public static ClientStatus readClientStatus(DataInputStream in) throws IOException {
-        return new ClientStatus(in.readInt());
-    }
-
     public static void writeString(DataOutputStream out, String msg) throws IOException {
         out.writeInt(msg.length());
         out.writeBytes(msg);
@@ -26,6 +20,10 @@ public class StreamEncoder {
     public static void writeProcessingException(DataOutputStream out, ProcessingException e) throws IOException {
         out.writeInt(e.getExitCode());
         writeString(out, e.getMessage());
+    }
+
+    public static ClientStatus readClientStatus(DataInputStream in) throws IOException {
+        return new ClientStatus(in.readInt());
     }
 
     public static ProcessingException readProcessingException(DataInputStream in) throws IOException {

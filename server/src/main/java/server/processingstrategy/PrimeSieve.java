@@ -3,7 +3,7 @@ package server.processingstrategy;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class PrimeSieve implements Iterable<Integer> {
+class PrimeSieve implements Iterable<Integer> {
 
     static String decompose(int n) {
         String res = "";
@@ -22,7 +22,7 @@ public class PrimeSieve implements Iterable<Integer> {
     }
 
     private final static PrimeSieve sieve = new PrimeSieve();
-    private LinkedList<Integer> primes;
+    private final LinkedList<Integer> primes;
 
     private PrimeSieve() {
         primes = new LinkedList<>();

@@ -9,8 +9,8 @@
         <version>1.0</version>
     </parent>
 
-    <artifactId>app</artifactId>
-    <name>Sockets App</name>
+    <artifactId>core</artifactId>
+    <name>Shared Core</name>
     <packaging>jar</packaging>
 
     <properties>
@@ -20,21 +20,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.ctzn</groupId>
-            <artifactId>core</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ctzn</groupId>
-            <artifactId>server</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ctzn</groupId>
-            <artifactId>client</artifactId>
-            <version>1.0</version>
-        </dependency>
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>

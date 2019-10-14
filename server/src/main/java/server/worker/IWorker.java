@@ -1,6 +1,6 @@
 package server.worker;
 
-import server.ClientStatus;
+import core.ClientStatus;
 
 import java.util.concurrent.Callable;
 

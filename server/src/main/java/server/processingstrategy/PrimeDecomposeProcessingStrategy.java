@@ -1,5 +1,7 @@
 package server.processingstrategy;
 
+import core.ProcessingException;
+
 public class PrimeDecomposeProcessingStrategy implements ProcessingStrategy {
 
     @Override

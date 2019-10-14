@@ -1,8 +1,8 @@
 package client;
 
+import core.ClientStatus;
+import core.ProcessingException;
 import org.apache.log4j.Logger;
-import server.ClientStatus;
-import server.processingstrategy.ProcessingException;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,7 +11,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import static server.StreamEncoder.*;
+import static core.StreamEncoder.*;
 
 public class PingClient implements IPingClient {
 

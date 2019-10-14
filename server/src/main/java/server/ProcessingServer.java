@@ -1,5 +1,6 @@
 package server;
 
+import core.ClientStatus;
 import org.apache.log4j.Logger;
 import server.worker.WorkerFactory;
 

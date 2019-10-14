@@ -2,7 +2,7 @@ package app;
 
 import client.PingClient;
 import server.ProcessingServer;
-import server.processingstrategy.ProcessingException;
+import core.ProcessingException;
 import server.worker.WorkerFactory;
 
 import java.net.InetAddress;

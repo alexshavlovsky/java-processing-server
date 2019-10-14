@@ -1,9 +1,9 @@
 package client;
 
-import server.processingstrategy.ProcessingException;
+import core.ProcessingException;
 
 import java.io.IOException;
 
-public interface IPingClient {
+interface IPingClient {
     String sendPing(String message) throws IOException, ProcessingException;
 }

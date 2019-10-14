@@ -1,4 +1,4 @@
-package server;
+package core;
 
 public class ClientStatus {
 
@@ -8,7 +8,7 @@ public class ClientStatus {
         RetryConnectionCount = retryConnectionCount;
     }
 
-    int getRetryConnectionCount() {
+    public int getRetryConnectionCount() {
         return RetryConnectionCount;
     }
 

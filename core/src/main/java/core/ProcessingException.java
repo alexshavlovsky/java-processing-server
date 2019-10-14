@@ -1,4 +1,4 @@
-package server.processingstrategy;
+package core;
 
 public class ProcessingException extends Exception {
 
