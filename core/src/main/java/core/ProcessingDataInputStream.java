@@ -10,21 +10,33 @@ public class ProcessingDataInputStream extends DataInputStream {
         super(in);
     }
 
-    public ClientStatus readClientStatus() throws IOException {
-        return new ClientStatus(super.readInt());
-    }
-
-    public ProcessingException readProcessingException() throws IOException {
-        int exitCode = super.readInt();
-        if (exitCode == 0) return null;
-        return new ProcessingException(this.readString(), exitCode);
-    }
-
-    public String readString() throws IOException {
-        int msgLength = super.readInt();
+    private String readString() throws IOException {
+        int msgLength = readInt();
         byte[] buf = new byte[msgLength];
-        super.readFully(buf);
+        readFully(buf);
         return new String(buf);
+    }
+
+    private ClientStatus readClientStatus() throws IOException {
+        return new ClientStatus(readInt());
+    }
+
+    public ServerRequest readServerRequest() throws IOException {
+        ClientStatus clientStatus = readClientStatus();
+        String payload = readString();
+        return new ServerRequest(clientStatus, payload);
+    }
+
+    private ProcessingException readProcessingException() throws IOException {
+        int exitCode = readInt();
+        if (exitCode == 0) return null;
+        return new ProcessingException(readString(), exitCode);
+    }
+
+    public ServerResponse readServerResponse() throws IOException {
+        ProcessingException exception = readProcessingException();
+        if (exception != null) return new ServerResponse(null, exception);
+        return new ServerResponse(readString(), null);
     }
 
 }

@@ -1,9 +1,6 @@
 package client;
 
-import core.ClientStatus;
-import core.ProcessingDataInputStream;
-import core.ProcessingDataOutputStream;
-import core.ProcessingException;
+import core.*;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -39,21 +36,20 @@ public class PingClient implements IPingClient {
             try (Socket socket = new Socket(address, port);
                  ProcessingDataInputStream in = new ProcessingDataInputStream(socket.getInputStream());
                  ProcessingDataOutputStream out = new ProcessingDataOutputStream(socket.getOutputStream())) {
+
                 if (logger.isDebugEnabled()) logger.debug("Writing to socket " + msg.length() + " bytes");
-                out.writeString(msg);
-                out.writeClientStatus(new ClientStatus(retryConnectionCount));
+                out.writeServerRequest(new ServerRequest(new ClientStatus(retryConnectionCount), msg));
+
                 socket.setSoTimeout(readTimeout);
+                logger.debug("Read server response");
+                ServerResponse serverResponse = in.readServerResponse();
 
-                logger.debug("Read processing status");
-                ProcessingException exception = in.readProcessingException();
-
-                if (exception != null) {
+                if (serverResponse.getException() != null) {
                     logger.error("Processing error received");
-                    throw exception;
+                    throw serverResponse.getException();
                 }
 
-                logger.debug("Read payload");
-                return in.readString();
+                return serverResponse.getResponsePayload();
             } catch (ConnectException e) {
                 retryConnectionCount++;
                 if (retryConnectionCount > RECONNECT_RETRIES) {

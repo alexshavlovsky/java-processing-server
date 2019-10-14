@@ -10,20 +10,33 @@ public class ProcessingDataOutputStream extends DataOutputStream {
         super(out);
     }
 
-    public void writeClientStatus(ClientStatus msg) throws IOException {
-        super.writeInt(msg.getRetryConnectionCount());
-        super.flush();
+    private void writeString(String msg) throws IOException {
+        writeInt(msg.length());
+        writeBytes(msg);
+        flush();
     }
 
-    public void writeString(String msg) throws IOException {
-        super.writeInt(msg.length());
-        super.writeBytes(msg);
-        super.flush();
+    private void writeClientStatus(ClientStatus msg) throws IOException {
+        writeInt(msg.getRetryConnectionCount());
     }
 
-    public void writeProcessingException(ProcessingException e) throws IOException {
-        super.writeInt(e.getExitCode());
-        this.writeString(e.getMessage());
+    private void writeProcessingException(ProcessingException e) throws IOException {
+        writeInt(e.getExitCode());
+        writeString(e.getMessage());
+    }
+
+    public void writeServerRequest(ServerRequest serverRequest) throws IOException {
+        writeClientStatus(serverRequest.getClientStatus());
+        writeString(serverRequest.getRequestPayload());
+    }
+
+    public void writeServerResponse(ServerResponse serverResponse) throws IOException {
+        if (serverResponse.getException() == null) {
+            writeInt(0);
+            writeString(serverResponse.getResponsePayload());
+        } else {
+            writeProcessingException(serverResponse.getException());
+        }
     }
 
 }

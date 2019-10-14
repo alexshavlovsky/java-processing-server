@@ -1,9 +1,6 @@
 package server.worker;
 
-import core.ClientStatus;
-import core.ProcessingDataInputStream;
-import core.ProcessingDataOutputStream;
-import core.ProcessingException;
+import core.*;
 import server.processingstrategy.ProcessingStrategy;
 
 import java.io.IOException;
@@ -24,19 +21,23 @@ class Worker implements IWorker {
         try (ProcessingDataInputStream in = new ProcessingDataInputStream(client.getInputStream());
              ProcessingDataOutputStream out = new ProcessingDataOutputStream(client.getOutputStream())) {
 
-            String input = in.readString();
-            ClientStatus clientStatus = in.readClientStatus();
+            ServerRequest serverRequest = in.readServerRequest();
 
-            try {
-                String output = processingStrategy.process(input);
-                out.writeInt(0);
-                out.writeString(output);
-            } catch (ProcessingException e) {
-                out.writeProcessingException(e);
-            }
+            out.writeServerResponse(process(serverRequest.getRequestPayload()));
 
-            return clientStatus;
+            return serverRequest.getClientStatus();
         }
+    }
+
+    private ServerResponse process(String requestPayload) {
+        String responsePayload = null;
+        ProcessingException processingException = null;
+        try {
+            responsePayload = processingStrategy.process(requestPayload);
+        } catch (ProcessingException e) {
+            processingException = e;
+        }
+        return new ServerResponse(responsePayload, processingException);
     }
 
 }
